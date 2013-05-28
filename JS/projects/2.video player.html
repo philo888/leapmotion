@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!------------------------------------------------------------------------------
+| Copyright (C) 2012-2013 Leap Motion, Inc. All rights reserved.               |
+| Leap Motion proprietary and confidential. Not for distribution.              |
+| Use subject to the terms of the Leap Motion SDK Agreement available at       |
+| https://developer.leapmotion.com/sdk_agreement, or another agreement         |
+| between Leap Motion and you, your company or other organization.             |
+------------------------------------------------------------------------------->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Leap JavaScript Sample</title>
+<script src="../leap.js"></script>
+<script>
+
+function getPointableById(frame, pid)
+{
+
+	var l = frame.pointables.length;
+	if(l>0)
+	{
+	var i=0;
+	for(; i<l; i++)
+	{
+		if( frame.pointables[i].id == pid)
+			return frame.pointables[i];
+	}
+}
+	return null;
+}
+
+document.addEventListener('DOMContentLoaded', onLoad, false);
+
+var video = null;
+var playing = false;
+
+function onLoad() {
+	
+	document.onselectstart = function()
+	{
+	    return false;
+	};
+
+	video = document.createElement('video');
+	document.body.appendChild( video );
+	video.src = "video.mp4";			
+	video.autoplay = false;
+	video.controls = true;
+	
+}
+
+
+// Store frame for motion functions
+var previousFrame;
+var paused = false;
+var pauseOnGesture = false;
+
+
+
+
+
+// Setup Leap loop with frame callback function
+var controllerOptions = {enableGestures: true};
+
+Leap.loop(controllerOptions, function(frame) {
+  if (paused) {
+    return; // Skip this update
+  }
+
+
+  // Display Gesture object data
+  var gestureOutput = document.getElementById("gestureData");
+  var gestureString = "";
+  if (frame.gestures.length > 0) {
+    if (pauseOnGesture) {
+      togglePause();
+    }
+    for (var i = 0; i < frame.gestures.length; i++) {
+      var gesture = frame.gestures[i];
+      gestureString += "Gesture ID: " + gesture.id + ", "
+                    + "type: " + gesture.type + ", "
+                    + "state: " + gesture.state + ", "
+                    + "hand IDs: " + gesture.handIds.join(", ") + ", "
+                    + "pointable IDs: " + gesture.pointableIds.join(", ") + ", "
+                    + "duration: " + gesture.duration + " &micro;s, ";
+
+      switch (gesture.type) {
+        case "circle":
+          gestureString += "center: " + vectorToString(gesture.center) + " mm, "
+                        + "normal: " + vectorToString(gesture.normal, 2) + ", "
+                        + "radius: " + gesture.radius.toFixed(1) + " mm, "
+                        + "progress: " + gesture.progress.toFixed(2) + " rotations";
+
+if(frame.pointables !=null )
+{
+   var clockwiseness;
+	var fingerid = gesture.pointableIds[0];
+	var pointable = getPointableById(frame, fingerid);
+	if(pointable!=null)
+	{
+    if (pointable.direction.angleTo(gesture.normal) <= Math.PI/4) {
+        clockwiseness = "clockwise";
+video.currentTime += .1;
+    }
+    else
+    {
+video.currentTime -= .1;
+        clockwiseness = "counterclockwise";
+    }
+}
+}
+          break;
+        case "swipe":
+          gestureString += "start position: " + vectorToString(gesture.startPosition) + " mm, "
+                        + "current position: " + vectorToString(gesture.position) + " mm, "
+                        + "direction: " + vectorToString(gesture.direction, 2) + ", "
+                        + "speed: " + gesture.speed.toFixed(1) + " mm/s";
+          break;
+        case "screenTap":
+        case "keyTap":
+          gestureString += "position: " + vectorToString(gesture.position) + " mm, "
+                        + "direction: " + vectorToString(gesture.direction, 2);
+if(!playing)
+{
+video.play();
+playing = true;
+}
+else
+{
+video.pause();
+playing = false;
+}
+          break;
+        default:
+          gestureString += "unkown gesture type";
+      }
+      gestureString += "<br />";
+    }
+  }
+  else {
+    gestureString += "No gestures";
+  }
+  //gestureOutput.innerHTML = gestureString;
+
+  // Store frame for motion functions
+  previousFrame = frame;
+})
+
+function vectorToString(vector, digits) {
+  if (typeof digits === "undefined") {
+    digits = 1;
+  }
+  return vector.toString();
+}
+
+function togglePause() {
+  paused = !paused;
+
+  if (paused) {
+    document.getElementById("pause").innerText = "Resume";
+  } else {
+    document.getElementById("pause").innerText = "Pause";
+  }
+}
+
+function pauseForGestures() {
+  if (document.getElementById("pauseOnGesture").checked) {
+    pauseOnGesture = true;
+  } else {
+    pauseOnGesture = false;
+  }
+}
+
+function checkLibrary() {
+  if (typeof Leap === "undefined") {
+    document.getElementById("main").innerHTML = "The Leap JavaScript client library (leap.js file) was not found. Please download the library from the GitHub project at <a href='https://github.com/leapmotion/leapjs'>https://github.com/leapmotion/leapjs</a>."
+    alert("The Leap JavaScript client library (leap.js file) was not found. Please download the latest version from the GitHub project at https://github.com/leapmotion/leapjs");
+  }
+}
+</script>
+</head>
+<body onload="checkLibrary()">
+<div id="main">
+
+<!--
+  <button id="pause" onclick="togglePause()">Pause</button>
+  <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()">Pause on gesture</input>
+-->
+
+</div>
+</body>
+</html>
