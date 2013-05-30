@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<!------------------------------------------------------------------------------
-| Copyright (C) 2012-2013 Leap Motion, Inc. All rights reserved.               |
-| Leap Motion proprietary and confidential. Not for distribution.              |
-| Use subject to the terms of the Leap Motion SDK Agreement available at       |
-| https://developer.leapmotion.com/sdk_agreement, or another agreement         |
-| between Leap Motion and you, your company or other organization.             |
-------------------------------------------------------------------------------->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -77,68 +70,53 @@ Leap.loop(controllerOptions, function(frame) {
     }
     for (var i = 0; i < frame.gestures.length; i++) {
       var gesture = frame.gestures[i];
-      gestureString += "Gesture ID: " + gesture.id + ", "
-                    + "type: " + gesture.type + ", "
-                    + "state: " + gesture.state + ", "
-                    + "hand IDs: " + gesture.handIds.join(", ") + ", "
-                    + "pointable IDs: " + gesture.pointableIds.join(", ") + ", "
-                    + "duration: " + gesture.duration + " &micro;s, ";
 
       switch (gesture.type) {
         case "circle":
-          gestureString += "center: " + vectorToString(gesture.center) + " mm, "
-                        + "normal: " + vectorToString(gesture.normal, 2) + ", "
-                        + "radius: " + gesture.radius.toFixed(1) + " mm, "
-                        + "progress: " + gesture.progress.toFixed(2) + " rotations";
 
-if(frame.pointables !=null )
-{
-   var clockwiseness;
-	var fingerid = gesture.pointableIds[0];
-	var pointable = getPointableById(frame, fingerid);
-	if(pointable!=null)
-	{
-    if (pointable.direction.angleTo(gesture.normal) <= Math.PI/4) {
-        clockwiseness = "clockwise";
-video.currentTime += .1;
-    }
-    else
-    {
-video.currentTime -= .1;
-        clockwiseness = "counterclockwise";
-    }
-}
-}
+			if(frame.pointables !=null )
+			{
+				var clockwiseness;
+				var fingerid = gesture.pointableIds[0];
+				var pointable = getPointableById(frame, fingerid);
+				if(pointable!=null)
+				{
+				    if (pointable.direction.angleTo(gesture.normal) <= Math.PI/4) 
+					{
+				        clockwiseness = "clockwise";
+						video.currentTime += .1;
+				    }
+				    else
+				    {
+						video.currentTime -= .1;
+				        clockwiseness = "counterclockwise";
+				    }
+				}
+			}
           break;
-        case "swipe":
-          gestureString += "start position: " + vectorToString(gesture.startPosition) + " mm, "
-                        + "current position: " + vectorToString(gesture.position) + " mm, "
-                        + "direction: " + vectorToString(gesture.direction, 2) + ", "
-                        + "speed: " + gesture.speed.toFixed(1) + " mm/s";
-          break;
+
         case "screenTap":
         case "keyTap":
-          gestureString += "position: " + vectorToString(gesture.position) + " mm, "
-                        + "direction: " + vectorToString(gesture.direction, 2);
-if(!playing)
-{
-video.play();
-playing = true;
-}
-else
-{
-video.pause();
-playing = false;
-}
+
+			if(!playing)
+			{
+				video.play();
+				playing = true;
+			}
+			else
+			{
+				video.pause();
+				playing = false;
+			}
           break;
         default:
-          gestureString += "unkown gesture type";
+
       }
-      gestureString += "<br />";
+
     }
   }
   else {
-    gestureString += "No gestures";
+
   }
   //gestureOutput.innerHTML = gestureString;
 
